@@ -570,27 +570,19 @@ def eliminar_registro(registro_id):
 
 st.set_page_config(page_title="Control de planta de camarón", layout="wide")
 
-import base64 as _b64
-with open("LogoV2-removebg-preview.png", "rb") as _f:
-    _logo_b64 = _b64.b64encode(_f.read()).decode()
-st.markdown(f"""
+st.markdown("""
     <style>
-    .stApp {{
-        background-color: #b8d0eb;
-    }}
-    .logo-top-right {{
-        position: absolute;
-        top: 5px;
-        right: 180px;
-        width: 220px;
-        z-index: 999;
-    }}
+    .stApp { background-color: #b8d0eb; }
+    [data-testid="stImage"] > img { background: transparent !important; }
     </style>
-    <img src="data:image/png;base64,{_logo_b64}" class="logo-top-right">
 """, unsafe_allow_html=True)
 
-st.title("Planta de Proceso OROPSA")
-st.markdown("<p style='font-size:20px;'>Sistema de manejo de información en planta procesadora.</p>", unsafe_allow_html=True)
+_col_title, _col_logo = st.columns([3, 1])
+with _col_title:
+    st.title("Planta de Proceso OROPSA")
+    st.markdown("<p style='font-size:20px;'>Sistema de manejo de información en planta procesadora.</p>", unsafe_allow_html=True)
+with _col_logo:
+    st.image("LogoV2-removebg-preview.png", use_container_width=True)
 
 init_db()
 
