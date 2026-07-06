@@ -653,7 +653,7 @@ with st.container(border=True):
         st.text_input("Lote unificado", value=lote, disabled=True)
 
     with _cb:
-        _kg_key = f"frm_kg_{lote or 'vacio'}_{selected_area}"
+        _kg_key = f"frm_kg_{piscina}_{ciclo}_{selected_area}"
         kg_recibidos = st.number_input("KG recibidos", min_value=0.0, step=1.0, key=_kg_key)
 
     with st.form("nuevo_registro", clear_on_submit=True):
