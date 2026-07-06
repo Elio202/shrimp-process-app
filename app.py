@@ -857,7 +857,7 @@ if not df.empty:
     excel_df["_hora_ingreso"] = pd.to_datetime(excel_df["creado_en"]).dt.hour
     total_procesados_por_lote = excel_df.groupby(["fecha", "_hora_ingreso", "lote", "area", "kg_recibidos"])["kg_procesados"].transform("sum")
     excel_df["kg_proporcional"] = (excel_df["kg_procesados"] / total_procesados_por_lote * excel_df["kg_recibidos"]).round(2)
-    excel_df["rendimiento_proporcional"] = (excel_df["kg_procesados"] / excel_df["kg_proporcional"].replace(0, float("nan")) * 100).round(2).astype(str) + "%"
+    excel_df["rendimiento_proporcional"] = (excel_df["kg_proporcional"] / excel_df["kg_recibidos"].replace(0, float("nan")) * 100).round(2).astype(str) + "%"
     excel_df.drop(columns=["_hora_ingreso"], inplace=True)
 
     cols_excel = ["id", "fecha", "turno", "area", "tipo_producto", "lote", "lote_codigo", "piscina", "ciclo", "cliente", "tallas", "presentacion", "kg_recibidos", "kg_procesados", "kg_proporcional", "rendimiento_proporcional", "no_personas", "observaciones", "creado_en"]
