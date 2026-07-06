@@ -647,8 +647,16 @@ if registros_join:
         excel_df["kg_proporcional"] / excel_df["kg_recibidos"].replace(0, float("nan")) * 100
     ).round(2).astype(str) + "%"
 
+    cols_excel = [
+        "ingreso_id", "detalle_id", "fecha", "turno", "area", "cliente",
+        "lote_codigo", "piscina", "ciclo", "lote", "tipo_producto", "tallas", "presentacion",
+        "kg_recibidos", "kg_procesados", "kg_proporcional", "rendimiento_proporcional",
+        "no_personas", "observaciones", "creado_en",
+    ]
+    cols_excel = [c for c in cols_excel if c in excel_df.columns]
+
     buf = BytesIO()
-    excel_df.to_excel(buf, index=False, sheet_name="Registros")
+    excel_df[cols_excel].to_excel(buf, index=False, sheet_name="Registros")
     st.download_button(
         label="Descargar Excel",
         data=buf.getvalue(),
