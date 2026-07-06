@@ -645,6 +645,12 @@ with st.container(border=True):
         if ciclo: _parts.append(str(ciclo))
         lote = "-".join(_parts)
         st.text_input("Lote unificado", value=lote, disabled=True)
+
+    # Si el lote cambió, limpiar KG recibidos
+    if lote != st.session_state.get("lote_anterior", ""):
+        st.session_state["lote_anterior"] = lote
+        st.session_state.pop("frm_kg_recibidos", None)
+
     with _cb:
         kg_recibidos = st.number_input("KG recibidos", min_value=0.0, step=1.0, key="frm_kg_recibidos")
 
