@@ -717,8 +717,7 @@ with st.container(border=True):
                     int(no_personas),
                     observaciones,
                 )
-            for _k in ("frm_codigo", "frm_piscina", "frm_piscina_manual", "frm_ciclo"):
-                st.session_state.pop(_k, None)
+            st.session_state.pop("frm_ciclo_disabled", None)
             st.session_state["msg_guardado"] = f"Registro guardado — Rendimiento: {rendimiento_calculado:.2f}%"
             st.rerun()
 
