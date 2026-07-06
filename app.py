@@ -622,8 +622,8 @@ st.divider()
 with st.container(border=True):
     st.subheader(f"Captura de {selected_area}")
 
-    # Código, Piscina y Ciclo fuera del form para lote en tiempo real
-    _ca, _ = st.columns(2)
+    # Código, Piscina, Ciclo y KG recibidos fuera del form para persistir entre registros
+    _ca, _cb = st.columns(2)
     with _ca:
         codigo = st.text_input("Lote del dia", key="frm_codigo", placeholder="Ej. G326")
         if POOLS:
@@ -639,6 +639,8 @@ with st.container(border=True):
         if ciclo: _parts.append(str(ciclo))
         lote = "-".join(_parts)
         st.text_input("Lote unificado", value=lote, disabled=True)
+    with _cb:
+        kg_recibidos = st.number_input("KG recibidos", min_value=0.0, step=1.0, key="frm_kg_recibidos")
 
     with st.form("nuevo_registro", clear_on_submit=True):
         col_a, col_b = st.columns(2)
@@ -661,7 +663,6 @@ with st.container(border=True):
             else:
                 seleccion_presentacion = st.selectbox("Presentación", ["Selecciona", *PRESENTACIONES])
                 presentacion = seleccion_presentacion if seleccion_presentacion != "Selecciona" else ""
-            kg_recibidos = st.number_input("KG recibidos", min_value=0.0, step=1.0)
             kg_procesados = st.number_input("KG procesados", min_value=0.0, step=1.0)
             no_personas = st.number_input("No. personas", min_value=0, step=1, format="%d")
 
@@ -698,7 +699,7 @@ with st.container(border=True):
                     int(no_personas),
                     observaciones,
                 )
-            for _k in ("frm_codigo", "frm_piscina", "frm_piscina_manual", "frm_ciclo"):
+            for _k in ("frm_codigo", "frm_piscina", "frm_piscina_manual", "frm_ciclo", "frm_kg_recibidos"):
                 st.session_state.pop(_k, None)
             st.success("Registro guardado")
             st.rerun()
