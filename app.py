@@ -625,7 +625,7 @@ with st.container(border=True):
     # Código, Piscina y Ciclo fuera del form para lote en tiempo real
     _ca, _ = st.columns(2)
     with _ca:
-        codigo = st.text_input("Código", key="frm_codigo", placeholder="Ej. G326")
+        codigo = st.text_input("Lote del dia", key="frm_codigo", placeholder="Ej. G326")
         if POOLS:
             _sel_piscina = st.selectbox("Piscina", ["Selecciona", *POOLS], key="frm_piscina")
             piscina = _sel_piscina if _sel_piscina != "Selecciona" else ""
@@ -732,7 +732,7 @@ if registros:
                 index=PRODUCTOS.index(registro["tipo_producto"]) + 1 if registro["tipo_producto"] in PRODUCTOS else 0,
             )
             # Código (parte inicial del lote)
-            edit_codigo = st.text_input("Código", value=registro.get("lote_codigo") or registro.get("lote") or "")
+            edit_codigo = st.text_input("Lote del dia", value=registro.get("lote_codigo") or registro.get("lote") or "")
             edit_lote = edit_codigo
             # Piscina
             if POOLS:
