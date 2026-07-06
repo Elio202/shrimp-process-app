@@ -651,7 +651,7 @@ if registros_join:
     ).round(2)
     # Guardar como decimal (0.4929) para que Excel lo trate como número porcentaje nativo
     excel_df["rendimiento_proporcional"] = (
-        excel_df["kg_proporcional"] / excel_df["kg_recibidos"].replace(0, float("nan"))
+        excel_df["kg_procesados"] / excel_df["kg_proporcional"].replace(0, float("nan"))
     ).round(4)
 
     cols_excel = [
