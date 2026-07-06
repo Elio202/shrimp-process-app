@@ -1,7 +1,13 @@
 import sqlite3
-from datetime import datetime, date
+from datetime import datetime, date, timezone, timedelta
 from io import BytesIO
 from pathlib import Path
+
+_GT = timezone(timedelta(hours=-6))  # Guatemala = UTC-6, sin horario de verano
+
+
+def now_gt():
+    return datetime.now(_GT).strftime("%Y-%m-%d %H:%M:%S")
 
 import pandas as pd
 import streamlit as st
@@ -210,7 +216,7 @@ def insertar_ingreso(fecha, turno, area, kg_recibidos, cliente, no_personas, obs
             """INSERT INTO ingresos (fecha, turno, area, kg_recibidos, cliente, no_personas, observaciones, creado_en)
                VALUES (?,?,?,?,?,?,?,?)""",
             (fecha, turno, area, kg_recibidos, cliente, no_personas, observaciones,
-             datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+             now_gt()),
         )
         conn.commit()
         return cur.lastrowid
@@ -449,7 +455,7 @@ with st.container(border=True):
             st.session_state["form_ver"] = v + 1
             st.rerun()
     with btn3:
-        if st.button("💾 Guardar ingreso", type="primary"):
+        if st.button("Guardar ingreso", type="primary"):
             fecha_obj = try_parse_fecha(fecha_text)
             if fecha_obj is None:
                 st.error("Ingresa la fecha en formato dd/mm/aaaa.")
