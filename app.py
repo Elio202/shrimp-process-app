@@ -643,9 +643,10 @@ if registros_join:
     excel_df["kg_proporcional"] = (
         excel_df["kg_procesados"] / _total_por_ingreso.replace(0, float("nan")) * excel_df["kg_recibidos"]
     ).round(2)
+    # Guardar como decimal (0.4929) para que Excel lo trate como número porcentaje nativo
     excel_df["rendimiento_proporcional"] = (
-        excel_df["kg_proporcional"] / excel_df["kg_recibidos"].replace(0, float("nan")) * 100
-    ).round(2).astype(str) + "%"
+        excel_df["kg_proporcional"] / excel_df["kg_recibidos"].replace(0, float("nan"))
+    ).round(4)
 
     cols_excel = [
         "ingreso_id", "detalle_id", "fecha", "turno", "area", "cliente",
@@ -656,7 +657,13 @@ if registros_join:
     cols_excel = [c for c in cols_excel if c in excel_df.columns]
 
     buf = BytesIO()
-    excel_df[cols_excel].to_excel(buf, index=False, sheet_name="Registros")
+    from openpyxl.utils import get_column_letter
+    with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+        excel_df[cols_excel].to_excel(writer, index=False, sheet_name="Registros")
+        ws = writer.sheets["Registros"]
+        rend_idx = cols_excel.index("rendimiento_proporcional") + 1
+        for cell in ws[get_column_letter(rend_idx)][1:]:
+            cell.number_format = "0.00%"
     st.download_button(
         label="Descargar Excel",
         data=buf.getvalue(),
