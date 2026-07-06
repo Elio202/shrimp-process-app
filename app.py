@@ -1,5 +1,4 @@
 import sqlite3
-import time
 from datetime import datetime, date
 from io import BytesIO
 from pathlib import Path
@@ -624,11 +623,6 @@ st.divider()
 with st.container(border=True):
     st.subheader(f"Captura de {selected_area}")
 
-    if "msg_guardado" in st.session_state:
-        st.success(st.session_state.pop("msg_guardado"))
-        time.sleep(3)
-        st.rerun()
-
     # Código, Piscina, Ciclo y KG recibidos fuera del form para persistir entre registros
     _ca, _cb = st.columns(2)
     with _ca:
@@ -718,7 +712,7 @@ with st.container(border=True):
                     observaciones,
                 )
             st.session_state.pop("frm_ciclo_disabled", None)
-            st.session_state["msg_guardado"] = f"Registro guardado — Rendimiento: {rendimiento_calculado:.2f}%"
+            st.toast(f"Registro guardado — Rendimiento: {rendimiento_calculado:.2f}%", icon="✅")
             st.rerun()
 
 st.divider()
