@@ -652,13 +652,9 @@ with st.container(border=True):
         lote = "-".join(_parts)
         st.text_input("Lote unificado", value=lote, disabled=True)
 
-    # Si el lote cambió, limpiar KG recibidos
-    if lote != st.session_state.get("lote_anterior", ""):
-        st.session_state["lote_anterior"] = lote
-        st.session_state.pop("frm_kg_recibidos", None)
-
     with _cb:
-        kg_recibidos = st.number_input("KG recibidos", min_value=0.0, step=1.0, key="frm_kg_recibidos")
+        _kg_key = f"frm_kg_{lote or 'vacio'}_{selected_area}"
+        kg_recibidos = st.number_input("KG recibidos", min_value=0.0, step=1.0, key=_kg_key)
 
     with st.form("nuevo_registro", clear_on_submit=True):
         col_a, col_b = st.columns(2)
@@ -721,7 +717,7 @@ with st.container(border=True):
                     int(no_personas),
                     observaciones,
                 )
-            for _k in ("frm_codigo", "frm_piscina", "frm_piscina_manual", "frm_ciclo", "frm_kg_recibidos"):
+            for _k in ("frm_codigo", "frm_piscina", "frm_piscina_manual", "frm_ciclo"):
                 st.session_state.pop(_k, None)
             st.session_state["msg_guardado"] = f"Registro guardado — Rendimiento: {rendimiento_calculado:.2f}%"
             st.rerun()
