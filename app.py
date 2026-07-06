@@ -854,7 +854,7 @@ if not df.empty:
     st.table(display_df)
 
     excel_df = display_df.copy()
-    total_procesados_por_lote = excel_df.groupby("lote")["kg_procesados"].transform("sum")
+    total_procesados_por_lote = excel_df.groupby(["lote", "area", "kg_recibidos"])["kg_procesados"].transform("sum")
     excel_df["kg_proporcional"] = (excel_df["kg_procesados"] / total_procesados_por_lote * excel_df["kg_recibidos"]).round(2)
     excel_df["rendimiento_proporcional"] = (excel_df["kg_procesados"] / excel_df["kg_proporcional"].replace(0, float("nan")) * 100).round(2).astype(str) + "%"
 
