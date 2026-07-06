@@ -841,8 +841,14 @@ if not df.empty:
     display_df = df[["id", "fecha", "turno", "area", "tipo_producto", "lote", "lote_codigo", "piscina", "ciclo", "cliente", "tallas", "presentacion", "kg_recibidos", "kg_procesados", "rendimiento", "no_personas", "observaciones", "creado_en"]].copy()
     st.table(display_df)
 
+    excel_df = display_df.copy()
+    total_procesados_por_lote = excel_df.groupby("lote")["kg_procesados"].transform("sum")
+    excel_df["kg_proporcional"] = (excel_df["kg_procesados"] / total_procesados_por_lote * excel_df["kg_recibidos"]).round(2)
+    excel_df["rendimiento_proporcional"] = (excel_df["kg_procesados"] / excel_df["kg_proporcional"].replace(0, float("nan")) * 100).round(2).astype(str) + "%"
+
+    cols_excel = ["id", "fecha", "turno", "area", "tipo_producto", "lote", "lote_codigo", "piscina", "ciclo", "cliente", "tallas", "presentacion", "kg_recibidos", "kg_procesados", "kg_proporcional", "rendimiento_proporcional", "no_personas", "observaciones", "creado_en"]
     excel_buffer = BytesIO()
-    display_df.to_excel(excel_buffer, index=False, sheet_name="Registros")
+    excel_df[cols_excel].to_excel(excel_buffer, index=False, sheet_name="Registros")
     excel_bytes = excel_buffer.getvalue()
     st.download_button(
         label="Descargar Excel",
