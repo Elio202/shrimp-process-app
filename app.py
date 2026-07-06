@@ -440,8 +440,8 @@ with st.container(border=True):
 
     btn1, btn2, btn3 = st.columns([1, 1, 5])
     with btn1:
-        if st.button("＋ Línea", disabled=(n >= 5), help="Agregar línea de detalle (máx. 5)"):
-            st.session_state["num_lineas"] = n + 1
+        if st.button("＋ Línea", disabled=(n >= 12), help="Agregar línea de detalle (máx. 12)"):
+            st.session_state["num_lineas"] = min(n + 1, 12)
             st.rerun()
     with btn2:
         if st.button("Nuevo", help="Limpiar el formulario"):
