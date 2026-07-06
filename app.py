@@ -40,6 +40,7 @@ AREAS = [
 ]
 
 NO_APLICA_AREAS = {"CLASIFICADO COLA", "PELADO", "DESCABEZADO", "TRATAMIENTO", "DESCONGELADO"}
+NO_PRESENTACION_AREAS = {"CLASIFICADO COLA", "PELADO", "DESCABEZADO", "TRATAMIENTO"}
 
 PRODUCTOS = [
     "GRANEL",
@@ -653,7 +654,7 @@ with st.container(border=True):
         with col_b:
             seleccion_talla = st.selectbox("Tallas", ["Selecciona", *TALLAS])
             tallas = seleccion_talla if seleccion_talla != "Selecciona" else ""
-            if selected_area in NO_APLICA_AREAS:
+            if selected_area in NO_PRESENTACION_AREAS:
                 presentacion = "No aplica"
                 st.text_input("Presentación", value=presentacion, disabled=True)
             else:
@@ -778,12 +779,16 @@ if registros:
             )
             edit_tallas = edit_seleccion_talla if edit_seleccion_talla != "Selecciona" else ""
 
-            edit_seleccion_presentacion = st.selectbox(
-                "Presentación",
-                ["Selecciona", *PRESENTACIONES],
-                index=PRESENTACIONES.index(registro["presentacion"]) + 1 if registro["presentacion"] in PRESENTACIONES else 0,
-            )
-            edit_presentacion = edit_seleccion_presentacion if edit_seleccion_presentacion != "Selecciona" else ""
+            if edit_area in NO_PRESENTACION_AREAS:
+                edit_presentacion = "No aplica"
+                st.text_input("Presentación", value=edit_presentacion, disabled=True)
+            else:
+                edit_seleccion_presentacion = st.selectbox(
+                    "Presentación",
+                    ["Selecciona", *PRESENTACIONES],
+                    index=PRESENTACIONES.index(registro["presentacion"]) + 1 if registro["presentacion"] in PRESENTACIONES else 0,
+                )
+                edit_presentacion = edit_seleccion_presentacion if edit_seleccion_presentacion != "Selecciona" else ""
 
             edit_kg_recibidos = st.number_input("KG recibidos", min_value=0.0, step=1.0, value=float(registro["kg_recibidos"] or 0))
             edit_kg_procesados = st.number_input("KG procesados", min_value=0.0, step=1.0, value=float(registro["kg_procesados"] or 0))
