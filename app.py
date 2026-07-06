@@ -632,8 +632,13 @@ with st.container(border=True):
             piscina = _sel_piscina if _sel_piscina != "Selecciona" else ""
         else:
             piscina = st.text_input("Piscina", key="frm_piscina_manual", placeholder="(lista no cargada)")
-        _sel_ciclo = st.selectbox("Ciclo", ["Selecciona", *CICLOS], key="frm_ciclo")
-        ciclo = int(_sel_ciclo) if _sel_ciclo not in ("Selecciona", "") and _sel_ciclo else None
+        _piscinas_extranjero = {"Q001", "Q002", "Q003", "Q004", "Q005"}
+        if piscina in _piscinas_extranjero:
+            st.text_input("Ciclo", value="No aplica", disabled=True, key="frm_ciclo_disabled")
+            ciclo = None
+        else:
+            _sel_ciclo = st.selectbox("Ciclo", ["Selecciona", *CICLOS], key="frm_ciclo")
+            ciclo = int(_sel_ciclo) if _sel_ciclo not in ("Selecciona", "") and _sel_ciclo else None
         _parts = []
         if codigo: _parts.append(codigo)
         if piscina: _parts.append(piscina)
