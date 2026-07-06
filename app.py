@@ -622,9 +622,6 @@ st.divider()
 with st.container(border=True):
     st.subheader(f"Captura de {selected_area}")
 
-    if "ultimo_rendimiento" in st.session_state and st.session_state["ultimo_rendimiento"] > 0:
-        st.info(f"Último rendimiento guardado: **{st.session_state['ultimo_rendimiento']:.2f}%**")
-
     # Código, Piscina, Ciclo y KG recibidos fuera del form para persistir entre registros
     _ca, _cb = st.columns(2)
     with _ca:
@@ -673,9 +670,11 @@ with st.container(border=True):
         if kg_recibidos > 0:
             rendimiento_calculado = round((kg_procesados / kg_recibidos) * 100, 2)
 
-        st.markdown(f"**Rendimiento calculado: {rendimiento_calculado:.2f}%**")
         if rendimiento_calculado > 0:
             st.session_state["ultimo_rendimiento"] = rendimiento_calculado
+
+        _rend_mostrar = rendimiento_calculado if rendimiento_calculado > 0 else st.session_state.get("ultimo_rendimiento", 0.0)
+        st.markdown(f"**Rendimiento calculado: {_rend_mostrar:.2f}%**")
         observaciones = st.text_area("Observaciones")
 
         submitted = st.form_submit_button("Guardar registro")
