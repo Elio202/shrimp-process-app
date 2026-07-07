@@ -587,9 +587,13 @@ with st.container(border=True):
     total_kgp_cap = sum(l["kg_procesados"] for l in lineas_data)
     rend_cap = round(total_kgp_cap / kg_recibidos * 100, 2) if kg_recibidos > 0 else 0.0
 
+    if rend_cap > 0:
+        st.session_state["ultimo_rendimiento"] = rend_cap
+    _rend_mostrar = rend_cap if rend_cap > 0 else st.session_state.get("ultimo_rendimiento", 0.0)
+
     mt1, mt2 = st.columns(2)
     mt1.metric("Total KG procesados", f"{total_kgp_cap:,.2f}")
-    mt2.metric("Rendimiento calculado", f"{rend_cap:.2f}%")
+    mt2.metric("Rendimiento calculado", f"{_rend_mostrar:.2f}%")
 
     observaciones = st.text_area("Observaciones", key=f"h_obs_{v}")
 
