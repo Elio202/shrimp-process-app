@@ -296,6 +296,155 @@ def eliminar_ingreso(ingreso_id):
         conn.commit()
 
 
+# ── Dialogs ────────────────────────────────────────────────────────────────────
+
+@st.dialog("Editar ingreso", width="large")
+def dialog_editar(ingreso_id):
+    ing = next((i for i in get_ingresos() if i["id"] == ingreso_id), None)
+    if not ing:
+        st.error("Ingreso no encontrado.")
+        return
+    detalles_dlg = get_detalles_by_ingreso(ingreso_id)
+
+    with st.form("form_dlg_editar"):
+        st.markdown("**Encabezado**")
+        ec1, ec2, ec3 = st.columns([2, 1, 1])
+        with ec1:
+            e_fecha = st.text_input(
+                "Fecha",
+                value=datetime.strptime(ing["fecha"], "%Y-%m-%d").strftime("%d/%m/%Y"),
+                placeholder="dd/mm/aaaa",
+            )
+        with ec2:
+            _turnos = ["Mañana", "Tarde", "Noche", "Otro"]
+            e_turno = st.selectbox(
+                "Turno", _turnos,
+                index=_turnos.index(ing["turno"]) if ing["turno"] in _turnos else 0,
+            )
+        with ec3:
+            e_no_personas = st.number_input(
+                "No. personas", min_value=0, step=1, format="%d",
+                value=int(ing["no_personas"] or 0),
+            )
+
+        ec4, ec5 = st.columns(2)
+        with ec4:
+            e_area = st.selectbox(
+                "Área", AREAS,
+                index=AREAS.index(ing["area"]) if ing["area"] in AREAS else 0,
+            )
+            e_kg_recibidos = st.number_input(
+                "KG recibidos", min_value=0.0, step=1.0,
+                value=float(ing["kg_recibidos"] or 0),
+            )
+        with ec5:
+            if e_area in NO_APLICA_AREAS:
+                e_cliente = "No aplica"
+                st.text_input("Cliente", value=e_cliente, disabled=True)
+            else:
+                _ecl_opts = ["Selecciona", *CLIENTES]
+                _ecl_idx = _ecl_opts.index(ing["cliente"]) if ing.get("cliente") in _ecl_opts else 0
+                _ecl_sel = st.selectbox("Cliente", _ecl_opts, index=_ecl_idx)
+                e_cliente = _ecl_sel if _ecl_sel != "Selecciona" else ""
+            e_observaciones = st.text_area("Observaciones", value=ing.get("observaciones") or "")
+
+        lineas_edit = []
+        if detalles_dlg:
+            st.markdown("**Líneas de detalle**")
+            for det in detalles_dlg:
+                with st.container(border=True):
+                    st.caption(f"Línea #{det['id']}")
+                    de1, de2, de3 = st.columns([2, 2, 1])
+                    with de1:
+                        de_lc = st.text_input(
+                            "Lote del día", value=det.get("lote_codigo") or "",
+                            key=f"d_lc_{det['id']}",
+                        )
+                    with de2:
+                        _dp_opts = ["Selecciona", *POOLS]
+                        _dp_idx = _dp_opts.index(det.get("piscina")) if det.get("piscina") in _dp_opts else 0
+                        _dp_sel = st.selectbox("Piscina", _dp_opts, index=_dp_idx, key=f"d_psc_{det['id']}")
+                        de_psc = _dp_sel if _dp_sel != "Selecciona" else ""
+                    with de3:
+                        _dc_opts = ["Selecciona", *CICLOS]
+                        _stored_cic = str(det.get("ciclo")) if det.get("ciclo") else ""
+                        _dc_idx = _dc_opts.index(_stored_cic) if _stored_cic in _dc_opts else 0
+                        _dc_sel = st.selectbox("Ciclo", _dc_opts, index=_dc_idx, key=f"d_cic_{det['id']}")
+                        de_cic = int(_dc_sel) if _dc_sel not in ("Selecciona", "") else None
+
+                    de4, de5, de6, de7 = st.columns([2, 2, 2, 1.5])
+                    with de4:
+                        _dt_opts = ["Selecciona", *PRODUCTOS]
+                        _dt_idx = _dt_opts.index(det.get("tipo_producto")) if det.get("tipo_producto") in _dt_opts else 0
+                        _dt_sel = st.selectbox("Tipo de producto", _dt_opts, index=_dt_idx, key=f"d_tp_{det['id']}")
+                        de_tipo = _dt_sel if _dt_sel != "Selecciona" else ""
+                    with de5:
+                        _dta_opts = ["Selecciona", *TALLAS]
+                        _dta_idx = _dta_opts.index(det.get("tallas")) if det.get("tallas") in _dta_opts else 0
+                        _dta_sel = st.selectbox("Tallas", _dta_opts, index=_dta_idx, key=f"d_ta_{det['id']}")
+                        de_talla = _dta_sel if _dta_sel != "Selecciona" else ""
+                    with de6:
+                        if e_area in NO_PRESENTACION_AREAS:
+                            de_pres = "No aplica"
+                            st.text_input("Presentación", value=de_pres, disabled=True, key=f"d_pr_d_{det['id']}")
+                        else:
+                            _dpr_opts = ["Selecciona", *PRESENTACIONES]
+                            _dpr_idx = _dpr_opts.index(det.get("presentacion")) if det.get("presentacion") in _dpr_opts else 0
+                            _dpr_sel = st.selectbox("Presentación", _dpr_opts, index=_dpr_idx, key=f"d_pr_{det['id']}")
+                            de_pres = _dpr_sel if _dpr_sel != "Selecciona" else ""
+                    with de7:
+                        de_kgp = st.number_input(
+                            "KG procesados", min_value=0.0, step=0.1,
+                            value=float(det.get("kg_procesados") or 0), key=f"d_kgp_{det['id']}",
+                        )
+
+                    _de_parts = [p for p in [de_lc, de_psc, str(de_cic) if de_cic else ""] if p]
+                    lineas_edit.append({
+                        "id": det["id"], "lote_codigo": de_lc, "piscina": de_psc,
+                        "ciclo": de_cic, "lote": "-".join(_de_parts), "tipo_producto": de_tipo,
+                        "tallas": de_talla, "presentacion": de_pres or "No aplica",
+                        "kg_procesados": de_kgp,
+                    })
+
+        if st.form_submit_button("✅ Actualizar ingreso", type="primary"):
+            e_fecha_obj = try_parse_fecha(e_fecha)
+            if e_fecha_obj is None:
+                st.error("Ingresa la fecha en formato dd/mm/aaaa.")
+            else:
+                actualizar_ingreso(
+                    ingreso_id, e_fecha_obj.strftime("%Y-%m-%d"),
+                    e_turno, e_area, float(e_kg_recibidos),
+                    e_cliente, int(e_no_personas), e_observaciones,
+                )
+                for l in lineas_edit:
+                    actualizar_detalle(
+                        l["id"], l["lote_codigo"], l["piscina"], l["ciclo"],
+                        l["lote"], l["tipo_producto"], l["tallas"], l["presentacion"],
+                        float(l["kg_procesados"]),
+                    )
+                st.toast("Ingreso actualizado correctamente", icon="✅")
+                st.rerun()
+
+
+@st.dialog("Confirmar eliminación")
+def dialog_eliminar(ingreso_id, ing):
+    st.warning(f"¿Deseas eliminar el ingreso **#{ingreso_id}**?")
+    st.caption(
+        f"Fecha: {ing['fecha']}  |  Área: {ing['area']}  |  "
+        f"KG Recibidos: {ing['kg_recibidos']:.1f} kg"
+    )
+    st.caption("Se eliminarán el ingreso y todas sus líneas de detalle. Esta acción no se puede deshacer.")
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("🗑️ Sí, eliminar", type="primary", use_container_width=True):
+            eliminar_ingreso(ingreso_id)
+            st.toast("Ingreso eliminado", icon="🗑️")
+            st.rerun()
+    with c2:
+        if st.button("Cancelar", use_container_width=True):
+            st.rerun()
+
+
 # ── Page setup ─────────────────────────────────────────────────────────────────
 
 st.set_page_config(page_title="Control de planta de camarón", layout="wide")
@@ -480,154 +629,6 @@ with st.container(border=True):
 
 st.divider()
 
-# ── Editar / Eliminar ──────────────────────────────────────────────────────────
-
-st.subheader("Editar o eliminar ingresos")
-ingresos_list = get_ingresos(area_filter)
-
-if ingresos_list:
-    ing_by_id = {i["id"]: i for i in ingresos_list}
-    sel_ing_id = st.selectbox(
-        "Selecciona un ingreso",
-        options=list(ing_by_id.keys()),
-        format_func=lambda id_: (
-            f"#{id_} — {ing_by_id[id_]['fecha']} | {ing_by_id[id_]['area']} | "
-            f"KGR: {ing_by_id[id_]['kg_recibidos']:.1f} kg"
-        ),
-    )
-    sel_ing = ing_by_id[sel_ing_id]
-    detalles_sel = get_detalles_by_ingreso(sel_ing_id)
-
-    with st.form("editar_ingreso"):
-        st.markdown("**Encabezado del ingreso**")
-        ec1, ec2, ec3 = st.columns([2, 1, 1])
-        with ec1:
-            e_fecha = st.text_input(
-                "Fecha",
-                value=datetime.strptime(sel_ing["fecha"], "%Y-%m-%d").strftime("%d/%m/%Y"),
-                placeholder="dd/mm/aaaa",
-            )
-        with ec2:
-            _turnos = ["Mañana", "Tarde", "Noche", "Otro"]
-            e_turno = st.selectbox(
-                "Turno", _turnos,
-                index=_turnos.index(sel_ing["turno"]) if sel_ing["turno"] in _turnos else 0,
-            )
-        with ec3:
-            e_no_personas = st.number_input(
-                "No. personas", min_value=0, step=1, format="%d",
-                value=int(sel_ing["no_personas"] or 0),
-            )
-
-        ec4, ec5 = st.columns(2)
-        with ec4:
-            e_area = st.selectbox(
-                "Área", AREAS,
-                index=AREAS.index(sel_ing["area"]) if sel_ing["area"] in AREAS else 0,
-            )
-            e_kg_recibidos = st.number_input(
-                "KG recibidos", min_value=0.0, step=1.0, value=float(sel_ing["kg_recibidos"] or 0)
-            )
-        with ec5:
-            if e_area in NO_APLICA_AREAS:
-                e_cliente = "No aplica"
-                st.text_input("Cliente", value=e_cliente, disabled=True)
-            else:
-                _ecl_opts = ["Selecciona", *CLIENTES]
-                _ecl_idx = _ecl_opts.index(sel_ing["cliente"]) if sel_ing.get("cliente") in _ecl_opts else 0
-                _ecl_sel = st.selectbox("Cliente", _ecl_opts, index=_ecl_idx)
-                e_cliente = _ecl_sel if _ecl_sel != "Selecciona" else ""
-
-        e_observaciones = st.text_area("Observaciones", value=sel_ing.get("observaciones") or "")
-
-        # Líneas de detalle editables
-        lineas_edit = []
-        if detalles_sel:
-            st.markdown("**Líneas de detalle**")
-            for det in detalles_sel:
-                with st.container(border=True):
-                    st.caption(f"Línea #{det['id']}")
-                    de1, de2, de3 = st.columns([2, 2, 1])
-                    with de1:
-                        de_lc = st.text_input(
-                            "Lote del día", value=det.get("lote_codigo") or "", key=f"e_lc_{det['id']}"
-                        )
-                    with de2:
-                        _dp_opts = ["Selecciona", *POOLS]
-                        _dp_idx = _dp_opts.index(det.get("piscina")) if det.get("piscina") in _dp_opts else 0
-                        _dp_sel = st.selectbox("Piscina", _dp_opts, index=_dp_idx, key=f"e_psc_{det['id']}")
-                        de_psc = _dp_sel if _dp_sel != "Selecciona" else ""
-                    with de3:
-                        _dc_opts = ["Selecciona", *CICLOS]
-                        _stored_cic = str(det.get("ciclo")) if det.get("ciclo") else ""
-                        _dc_idx = _dc_opts.index(_stored_cic) if _stored_cic in _dc_opts else 0
-                        _dc_sel = st.selectbox("Ciclo", _dc_opts, index=_dc_idx, key=f"e_cic_{det['id']}")
-                        de_cic = int(_dc_sel) if _dc_sel not in ("Selecciona", "") else None
-
-                    de4, de5, de6, de7 = st.columns([2, 2, 2, 1.5])
-                    with de4:
-                        _dt_opts = ["Selecciona", *PRODUCTOS]
-                        _dt_idx = _dt_opts.index(det.get("tipo_producto")) if det.get("tipo_producto") in _dt_opts else 0
-                        _dt_sel = st.selectbox("Tipo de producto", _dt_opts, index=_dt_idx, key=f"e_tp_{det['id']}")
-                        de_tipo = _dt_sel if _dt_sel != "Selecciona" else ""
-                    with de5:
-                        _dta_opts = ["Selecciona", *TALLAS]
-                        _dta_idx = _dta_opts.index(det.get("tallas")) if det.get("tallas") in _dta_opts else 0
-                        _dta_sel = st.selectbox("Tallas", _dta_opts, index=_dta_idx, key=f"e_ta_{det['id']}")
-                        de_talla = _dta_sel if _dta_sel != "Selecciona" else ""
-                    with de6:
-                        if e_area in NO_PRESENTACION_AREAS:
-                            de_pres = "No aplica"
-                            st.text_input("Presentación", value=de_pres, disabled=True, key=f"e_pr_d_{det['id']}")
-                        else:
-                            _dpr_opts = ["Selecciona", *PRESENTACIONES]
-                            _dpr_idx = _dpr_opts.index(det.get("presentacion")) if det.get("presentacion") in _dpr_opts else 0
-                            _dpr_sel = st.selectbox("Presentación", _dpr_opts, index=_dpr_idx, key=f"e_pr_{det['id']}")
-                            de_pres = _dpr_sel if _dpr_sel != "Selecciona" else ""
-                    with de7:
-                        de_kgp = st.number_input(
-                            "KG procesados", min_value=0.0, step=0.1,
-                            value=float(det.get("kg_procesados") or 0), key=f"e_kgp_{det['id']}"
-                        )
-
-                    _de_parts = [p for p in [de_lc, de_psc, str(de_cic) if de_cic else ""] if p]
-                    de_lote = "-".join(_de_parts)
-                    lineas_edit.append({
-                        "id": det["id"], "lote_codigo": de_lc, "piscina": de_psc,
-                        "ciclo": de_cic, "lote": de_lote, "tipo_producto": de_tipo,
-                        "tallas": de_talla, "presentacion": de_pres or "No aplica",
-                        "kg_procesados": de_kgp,
-                    })
-
-        btn_upd = st.form_submit_button("Actualizar ingreso")
-        if btn_upd:
-            e_fecha_obj = try_parse_fecha(e_fecha)
-            if e_fecha_obj is None:
-                st.error("Ingresa la fecha en formato dd/mm/aaaa.")
-            else:
-                actualizar_ingreso(
-                    sel_ing_id, e_fecha_obj.strftime("%Y-%m-%d"),
-                    e_turno, e_area, float(e_kg_recibidos),
-                    e_cliente, int(e_no_personas), e_observaciones,
-                )
-                for l in lineas_edit:
-                    actualizar_detalle(
-                        l["id"], l["lote_codigo"], l["piscina"], l["ciclo"],
-                        l["lote"], l["tipo_producto"], l["tallas"], l["presentacion"],
-                        float(l["kg_procesados"]),
-                    )
-                st.success("Ingreso actualizado correctamente")
-                st.rerun()
-
-    if st.button("Eliminar ingreso seleccionado", type="secondary"):
-        eliminar_ingreso(sel_ing_id)
-        st.success("Ingreso eliminado")
-        st.rerun()
-else:
-    st.info("Aún no hay ingresos para editar o eliminar.")
-
-st.divider()
-
 # ── Historial ──────────────────────────────────────────────────────────────────
 
 st.subheader("Historial")
@@ -642,6 +643,29 @@ if registros_join:
     ]
     cols_show = [c for c in cols_show if c in display_df.columns]
     st.dataframe(display_df[cols_show], use_container_width=True)
+
+    # Barra de acciones compacta
+    ingresos_hist = get_ingresos(area_filter)
+    if ingresos_hist:
+        ing_hist_by_id = {i["id"]: i for i in ingresos_hist}
+        ha1, ha2, ha3 = st.columns([5, 1, 1])
+        with ha1:
+            sel_hist_id = st.selectbox(
+                "ingreso",
+                options=list(ing_hist_by_id.keys()),
+                format_func=lambda id_: (
+                    f"#{id_} — {ing_hist_by_id[id_]['fecha']} | "
+                    f"{ing_hist_by_id[id_]['area']} | "
+                    f"KGR: {ing_hist_by_id[id_]['kg_recibidos']:.1f} kg"
+                ),
+                label_visibility="collapsed",
+            )
+        with ha2:
+            if st.button("✏️ Editar", use_container_width=True):
+                dialog_editar(sel_hist_id)
+        with ha3:
+            if st.button("🗑️ Eliminar", use_container_width=True):
+                dialog_eliminar(sel_hist_id, ing_hist_by_id[sel_hist_id])
 
     # Excel con kg_proporcional correcto (agrupado por ingreso_id)
     excel_df = display_df[cols_show].copy()
