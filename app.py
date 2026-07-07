@@ -41,6 +41,7 @@ AREAS = [
 
 NO_APLICA_AREAS = {"CLASIFICADO COLA", "DESCABEZADO", "TRATAMIENTO", "DESCONGELADO"}
 NO_PRESENTACION_AREAS = {"CLASIFICADO COLA", "PELADO", "DESCABEZADO", "TRATAMIENTO"}
+NO_TALLAS_AREAS = {"DESCABEZADO"}
 
 _PISCINAS_EXTRANJERO = {"Q001", "Q002", "Q003", "Q004", "Q005"}
 
@@ -372,8 +373,12 @@ def dialog_editar(ingreso_id):
                         _dt_idx = PRODUCTOS.index(det.get("tipo_producto")) if det.get("tipo_producto") in PRODUCTOS else None
                         de_tipo = st.selectbox("Tipo de producto", PRODUCTOS, index=_dt_idx, placeholder="Selecciona...", key=f"d_tp_{det['id']}") or ""
                     with de5:
-                        _dta_idx = TALLAS.index(det.get("tallas")) if det.get("tallas") in TALLAS else None
-                        de_talla = st.selectbox("Tallas", TALLAS, index=_dta_idx, placeholder="Selecciona...", key=f"d_ta_{det['id']}") or ""
+                        if e_area in NO_TALLAS_AREAS:
+                            de_talla = "No aplica"
+                            st.text_input("Tallas", value=de_talla, disabled=True, key=f"d_ta_d_{det['id']}")
+                        else:
+                            _dta_idx = TALLAS.index(det.get("tallas")) if det.get("tallas") in TALLAS else None
+                            de_talla = st.selectbox("Tallas", TALLAS, index=_dta_idx, placeholder="Selecciona...", key=f"d_ta_{det['id']}") or ""
                     with de6:
                         if e_area in NO_PRESENTACION_AREAS:
                             de_pres = "No aplica"
@@ -551,7 +556,11 @@ with st.container(border=True):
             with ld:
                 tipo_producto = st.selectbox("Tipo de producto", PRODUCTOS, index=None, placeholder="Selecciona...", key=f"l_tp_{v}_{i}") or ""
             with le:
-                tallas = st.selectbox("Tallas", TALLAS, index=None, placeholder="Selecciona...", key=f"l_ta_{v}_{i}") or ""
+                if selected_area in NO_TALLAS_AREAS:
+                    tallas = "No aplica"
+                    st.text_input("Tallas", value=tallas, disabled=True, key=f"l_ta_d_{v}_{i}")
+                else:
+                    tallas = st.selectbox("Tallas", TALLAS, index=None, placeholder="Selecciona...", key=f"l_ta_{v}_{i}") or ""
             with lf:
                 if selected_area in NO_PRESENTACION_AREAS:
                     presentacion = "No aplica"
