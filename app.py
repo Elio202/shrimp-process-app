@@ -451,7 +451,7 @@ st.set_page_config(page_title="Control de planta de camarón", layout="wide")
 st.markdown("""
     <style>
     .stApp { background-color: #b8d0eb; }
-    [data-testid="stImage"] > img { background: transparent !important; }
+    [data-testid="stImage"] > img { background: transparent !important; max-height: 100px !important; width: auto !important; object-fit: contain; }
     </style>
 """, unsafe_allow_html=True)
 
