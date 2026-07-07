@@ -342,10 +342,8 @@ def dialog_editar(ingreso_id):
                 e_cliente = "No aplica"
                 st.text_input("Cliente", value=e_cliente, disabled=True)
             else:
-                _ecl_opts = ["Selecciona", *CLIENTES]
-                _ecl_idx = _ecl_opts.index(ing["cliente"]) if ing.get("cliente") in _ecl_opts else 0
-                _ecl_sel = st.selectbox("Cliente", _ecl_opts, index=_ecl_idx)
-                e_cliente = _ecl_sel if _ecl_sel != "Selecciona" else ""
+                _ecl_idx = CLIENTES.index(ing["cliente"]) if ing.get("cliente") in CLIENTES else None
+                e_cliente = st.selectbox("Cliente", CLIENTES, index=_ecl_idx, placeholder="Selecciona...", key="d_ecl") or ""
             e_observaciones = st.text_area("Observaciones", value=ing.get("observaciones") or "")
 
         lineas_edit = []
@@ -361,37 +359,28 @@ def dialog_editar(ingreso_id):
                             key=f"d_lc_{det['id']}",
                         )
                     with de2:
-                        _dp_opts = ["Selecciona", *POOLS]
-                        _dp_idx = _dp_opts.index(det.get("piscina")) if det.get("piscina") in _dp_opts else 0
-                        _dp_sel = st.selectbox("Piscina", _dp_opts, index=_dp_idx, key=f"d_psc_{det['id']}")
-                        de_psc = _dp_sel if _dp_sel != "Selecciona" else ""
+                        _dp_idx = POOLS.index(det.get("piscina")) if det.get("piscina") in POOLS else None
+                        de_psc = st.selectbox("Piscina", POOLS, index=_dp_idx, placeholder="Selecciona...", key=f"d_psc_{det['id']}") or ""
                     with de3:
-                        _dc_opts = ["Selecciona", *CICLOS]
-                        _stored_cic = str(det.get("ciclo")) if det.get("ciclo") else ""
-                        _dc_idx = _dc_opts.index(_stored_cic) if _stored_cic in _dc_opts else 0
-                        _dc_sel = st.selectbox("Ciclo", _dc_opts, index=_dc_idx, key=f"d_cic_{det['id']}")
-                        de_cic = int(_dc_sel) if _dc_sel not in ("Selecciona", "") else None
+                        _stored_cic = str(det.get("ciclo")) if det.get("ciclo") else None
+                        _dc_idx = CICLOS.index(_stored_cic) if _stored_cic in CICLOS else None
+                        _dc_sel = st.selectbox("Ciclo", CICLOS, index=_dc_idx, placeholder="Selecciona...", key=f"d_cic_{det['id']}")
+                        de_cic = int(_dc_sel) if _dc_sel else None
 
                     de4, de5, de6, de7 = st.columns([2, 2, 2, 1.5])
                     with de4:
-                        _dt_opts = ["Selecciona", *PRODUCTOS]
-                        _dt_idx = _dt_opts.index(det.get("tipo_producto")) if det.get("tipo_producto") in _dt_opts else 0
-                        _dt_sel = st.selectbox("Tipo de producto", _dt_opts, index=_dt_idx, key=f"d_tp_{det['id']}")
-                        de_tipo = _dt_sel if _dt_sel != "Selecciona" else ""
+                        _dt_idx = PRODUCTOS.index(det.get("tipo_producto")) if det.get("tipo_producto") in PRODUCTOS else None
+                        de_tipo = st.selectbox("Tipo de producto", PRODUCTOS, index=_dt_idx, placeholder="Selecciona...", key=f"d_tp_{det['id']}") or ""
                     with de5:
-                        _dta_opts = ["Selecciona", *TALLAS]
-                        _dta_idx = _dta_opts.index(det.get("tallas")) if det.get("tallas") in _dta_opts else 0
-                        _dta_sel = st.selectbox("Tallas", _dta_opts, index=_dta_idx, key=f"d_ta_{det['id']}")
-                        de_talla = _dta_sel if _dta_sel != "Selecciona" else ""
+                        _dta_idx = TALLAS.index(det.get("tallas")) if det.get("tallas") in TALLAS else None
+                        de_talla = st.selectbox("Tallas", TALLAS, index=_dta_idx, placeholder="Selecciona...", key=f"d_ta_{det['id']}") or ""
                     with de6:
                         if e_area in NO_PRESENTACION_AREAS:
                             de_pres = "No aplica"
                             st.text_input("Presentación", value=de_pres, disabled=True, key=f"d_pr_d_{det['id']}")
                         else:
-                            _dpr_opts = ["Selecciona", *PRESENTACIONES]
-                            _dpr_idx = _dpr_opts.index(det.get("presentacion")) if det.get("presentacion") in _dpr_opts else 0
-                            _dpr_sel = st.selectbox("Presentación", _dpr_opts, index=_dpr_idx, key=f"d_pr_{det['id']}")
-                            de_pres = _dpr_sel if _dpr_sel != "Selecciona" else ""
+                            _dpr_idx = PRESENTACIONES.index(det.get("presentacion")) if det.get("presentacion") in PRESENTACIONES else None
+                            de_pres = st.selectbox("Presentación", PRESENTACIONES, index=_dpr_idx, placeholder="Selecciona...", key=f"d_pr_{det['id']}") or ""
                     with de7:
                         de_kgp = st.number_input(
                             "KG procesados", min_value=0.0, step=0.1,
@@ -528,8 +517,7 @@ with st.container(border=True):
             cliente = "No aplica"
             st.text_input("Cliente", value=cliente, disabled=True, key=f"h_cli_d_{v}")
         else:
-            _cl_sel = st.selectbox("Cliente", ["Selecciona", *CLIENTES], key=f"h_cli_{v}")
-            cliente = _cl_sel if _cl_sel != "Selecciona" else ""
+            cliente = st.selectbox("Cliente", CLIENTES, index=None, placeholder="Selecciona...", key=f"h_cli_{v}") or ""
 
     st.markdown("---")
     st.markdown("##### Detalle de producción")
@@ -545,15 +533,14 @@ with st.container(border=True):
                     "Lote del día", key=f"l_cod_{v}_{i}", placeholder="Ej. G326"
                 )
             with lb:
-                _psc_sel = st.selectbox("Piscina", ["Selecciona", *POOLS], key=f"l_psc_{v}_{i}")
-                piscina = _psc_sel if _psc_sel != "Selecciona" else ""
+                piscina = st.selectbox("Piscina", POOLS, index=None, placeholder="Selecciona...", key=f"l_psc_{v}_{i}") or ""
             with lc_:
                 if piscina in _PISCINAS_EXTRANJERO:
                     st.text_input("Ciclo", value="No aplica", disabled=True, key=f"l_cic_d_{v}_{i}")
                     ciclo = None
                 else:
-                    _cic_sel = st.selectbox("Ciclo", ["Selecciona", *CICLOS], key=f"l_cic_{v}_{i}")
-                    ciclo = int(_cic_sel) if _cic_sel not in ("Selecciona", "") else None
+                    _cic_sel = st.selectbox("Ciclo", CICLOS, index=None, placeholder="Selecciona...", key=f"l_cic_{v}_{i}")
+                    ciclo = int(_cic_sel) if _cic_sel else None
 
             _parts = [p for p in [lote_codigo, piscina, str(ciclo) if ciclo else ""] if p]
             lote_uni = "-".join(_parts)
@@ -562,18 +549,15 @@ with st.container(border=True):
 
             ld, le, lf, lg = st.columns([2, 2, 2, 1.5])
             with ld:
-                _tp_sel = st.selectbox("Tipo de producto", ["Selecciona", *PRODUCTOS], key=f"l_tp_{v}_{i}")
-                tipo_producto = _tp_sel if _tp_sel != "Selecciona" else ""
+                tipo_producto = st.selectbox("Tipo de producto", PRODUCTOS, index=None, placeholder="Selecciona...", key=f"l_tp_{v}_{i}") or ""
             with le:
-                _ta_sel = st.selectbox("Tallas", ["Selecciona", *TALLAS], key=f"l_ta_{v}_{i}")
-                tallas = _ta_sel if _ta_sel != "Selecciona" else ""
+                tallas = st.selectbox("Tallas", TALLAS, index=None, placeholder="Selecciona...", key=f"l_ta_{v}_{i}") or ""
             with lf:
                 if selected_area in NO_PRESENTACION_AREAS:
                     presentacion = "No aplica"
                     st.text_input("Presentación", value=presentacion, disabled=True, key=f"l_pr_d_{v}_{i}")
                 else:
-                    _pr_sel = st.selectbox("Presentación", ["Selecciona", *PRESENTACIONES], key=f"l_pr_{v}_{i}")
-                    presentacion = _pr_sel if _pr_sel != "Selecciona" else ""
+                    presentacion = st.selectbox("Presentación", PRESENTACIONES, index=None, placeholder="Selecciona...", key=f"l_pr_{v}_{i}") or ""
             with lg:
                 kgp = st.number_input("KG procesados", min_value=0.0, step=0.1, key=f"l_kgp_{v}_{i}")
 
