@@ -357,7 +357,7 @@ def dialog_editar(ingreso_id):
                     with de1:
                         de_lc = st.text_input(
                             "Lote del día", value=det.get("lote_codigo") or "",
-                            key=f"d_lc_{det['id']}",
+                            key=f"d_lc_{det['id']}", max_chars=4,
                         )
                     with de2:
                         _dp_idx = POOLS.index(det.get("piscina")) if det.get("piscina") in POOLS else None
@@ -535,7 +535,7 @@ with st.container(border=True):
             la, lb, lc_ = st.columns([2, 2, 1])
             with la:
                 lote_codigo = st.text_input(
-                    "Lote del día", key=f"l_cod_{v}_{i}", placeholder="Ej. G326"
+                    "Lote del día", key=f"l_cod_{v}_{i}", placeholder="Ej. G326", max_chars=4
                 )
             with lb:
                 piscina = st.selectbox("Piscina", POOLS, index=None, placeholder="Selecciona...", key=f"l_psc_{v}_{i}") or ""
